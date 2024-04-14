@@ -1,14 +1,18 @@
 from typing import Any
 from typing import Awaitable
 from typing import NoReturn
+from typing import Unpack
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pydantic import BaseModel
 from pymongo import ReturnDocument
+from pymongo.cursor import Cursor
 from pymongo.results import DeleteResult
 from pymongo.results import InsertOneResult
 from pymongo.results import UpdateResult
+
+from tokka.types import FindKwargs
 
 
 class Collection:
@@ -55,11 +59,10 @@ class Collection:
         self,
         model: BaseModel,
         filter_by: None | str | list[str] = None,
-        args: Any = None,
-        kwargs: Any = None,
-    ) -> Awaitable[Any]:
+        **kwargs: Unpack[FindKwargs],
+    ) -> Awaitable[Cursor] | Awaitable[None]:
         filter = self._create_query_filter(model, filter_by)
-        return self.collection.find_one(filter, *args, **kwargs)
+        return self.collection.find_one(filter, kwargs)
 
     def find_one_and_replace(self) -> Awaitable[ReturnDocument]:
         raise NotImplementedError
