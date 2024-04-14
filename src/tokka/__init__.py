@@ -95,6 +95,9 @@ class Collection:
     ) -> Awaitable[ReturnDocument]:
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+        pymongo_kwargs.pop("projection", None)
+        pymongo_kwargs.pop("filter", None)
+        pymongo_kwargs.pop("replacement", None)
         pymongo_kwargs.pop("upsert", None)
         pymongo_kwargs.pop("return_document", None)
 
