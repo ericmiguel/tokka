@@ -1,6 +1,3 @@
-![logo](https://github.com/ericmiguel/tokka/assets/12076399/09366629-fdb6-46b3-9a3b-6d3c20b8a727)
-
-
 <p align="center">
   <a href="https://github.com/ericmiguel/tokka"><img src="https://github.com/ericmiguel/tokka/assets/12076399/09366629-fdb6-46b3-9a3b-6d3c20b8a727" alt="Tokka"></a>
 </p>
