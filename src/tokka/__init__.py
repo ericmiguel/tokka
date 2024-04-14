@@ -58,13 +58,13 @@ class Collection:
     ) -> dict[str, Any]:
         match by:
             case x if isinstance(x, str):
-                filter = {x: getattr(model, x)}
+                _filter = {x: getattr(model, x)}
             case xx if isinstance(xx, list):
-                filter = {x: getattr(model, x) for x in xx}
+                _filter = {x: getattr(model, x) for x in xx}
             case _:
-                filter = model.model_dump()
+                _filter = model.model_dump()
 
-        return filter
+        return _filter
 
     @staticmethod
     def _make_projection(exclude_keys: set[str]) -> dict[str, Literal[0]]:
@@ -206,9 +206,9 @@ class Collection:
         filter_by: None | str | list[str] = None,
         upsert: bool = False,
     ) -> Awaitable[UpdateResult]:
-        update = model.model_dump(*dump_kwargs)
-        filter = self._make_filter(model, filter_by)
-        return self.collection.update_one(filter, update, upsert)
+        _update = model.model_dump(*dump_kwargs)
+        _filter = self._make_filter(model, filter_by)
+        return self.collection.update_one(_filter, _update, upsert)
 
     def set(
         self,
@@ -219,10 +219,10 @@ class Collection:
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
         update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
-        filter = self._make_filter(model, match)
-        update = {"$set": model.model_dump(**model_dump_kwargs)}
+        _filter = self._make_filter(model, match)
+        _update = {"$set": model.model_dump(**model_dump_kwargs)}
 
-        return self.collection.update_one(filter, update, upsert, **update_one_kwargs)
+        return self.collection.update_one(_filter, _update, upsert, **update_one_kwargs)
 
     def delete_one(self) -> Awaitable[DeleteResult]:
         raise NotImplementedError
