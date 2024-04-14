@@ -11,10 +11,9 @@ from pymongo.cursor import Cursor
 from pymongo.results import DeleteResult
 from pymongo.results import InsertOneResult
 from pymongo.results import UpdateResult
-from tokka.types import FindKwargs
+from tokka.kwargs import FindKwargs
 from typing import Literal
-from tokka.types import ModelDumpKwargs
-
+from tokka.kwargs import ModelDumpKwargs
 
 
 class Collection:
