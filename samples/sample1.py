@@ -24,16 +24,37 @@ class DB(Database):
 
 if __name__ == "__main__":
     db = DB("tokka", connection=config.mongodb.URI)
-    user = UserProfile(name="John Doe", email="john.doe@example.com.br")
+    user1 = UserProfile(name="John Doe", email="john.doe@example.com.br")
+    user2 = UserProfile(name="Emma Su", email="ema.sue@example.com.br")
 
-    async def tokka_crud() -> None:
-        messages = await asyncio.gather(
-            db.user_profiles.insert_one(user),
-            db.user_profiles.insert_one(user, exclude="name"),
-            db.user_profiles.set(user, match="name", upsert=True, exclude="email"),
+    async def crud() -> None:
+        insert_results = await asyncio.gather(
+            db.user_profiles.insert_one(user1),
+            db.user_profiles.insert_one(user2),
+            db.user_profiles.insert_one(user1, exclude="name"),
         )
 
-        ic(messages)
+        set_results = await asyncio.gather(
+            db.user_profiles.set(user1, match="name", upsert=True, exclude="email"),
+            db.user_profiles.find_one(user2, filter_by="name"),
+        )
 
-    asyncio.run(tokka_crud())
+        find_results = await asyncio.gather(
+            db.user_profiles.find_one(user1, filter_by="name"),
+            db.user_profiles.find_one(user2, filter_by="name"),
+            db.user_profiles.find_one(user1, filter_by="email"),
+        )
+
+        find_one_and_replace_results = await asyncio.gather(
+            db.user_profiles.find_one_and_replace(user1, user2, filter_by="name"),
+            db.user_profiles.find_one_and_replace(
+                user2, user1, filter_by="name", return_old=True
+            ),
+        )
+
+        ic(insert_results, set_results, find_results, find_one_and_replace_results)
+        await db.user_profiles.collection.delete_many({})
+
+    asyncio.run(crud())
+
     db.close()
