@@ -15,6 +15,13 @@ from tokka.kwargs import FindKwargs
 from typing import Literal
 from tokka.kwargs import ModelDumpKwargs
 
+# TODO: 'Intersection' PEP is under development
+#        it will possible be the best and most accurate to type Pydantic`s model_dump 
+#        and Pymongo's Kwargs. 
+#
+# ? Related issues:
+#        https://github.com/python/typing/issues/213
+#        https://github.com/python/typing/issues/1445
 
 class Collection:
     def __init__(self, collection: AsyncIOMotorCollection) -> None:
