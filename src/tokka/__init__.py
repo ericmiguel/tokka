@@ -159,6 +159,28 @@ class Collection:
             **kwargs,
         )
 
+    def find_one_and_set(
+        self,
+        model: BaseModel,
+        *,
+        upsert: bool = False,
+        return_old: bool = False,
+        filter_by: None | str | list[str] = None,
+        hide: set[str] = set("_id"),
+        **kwargs: Any,
+    ) -> Awaitable[ReturnDocument]:
+        _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+        _update = {"$set": model.model_dump(**model_dump_kwargs)}
+        return self.find_one_and_update(
+            model,
+            _update,
+            upsert=upsert,
+            return_old=return_old,
+            filter_by=filter_by,
+            hide=hide,
+            **kwargs,
+        )
+
     def insert_one(self, model: BaseModel, **kwargs: Any) -> Awaitable[InsertOneResult]:
         insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         document = model.model_dump(**model_dump_kwargs)
