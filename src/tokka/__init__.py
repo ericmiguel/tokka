@@ -1,6 +1,6 @@
 from typing import Any
 from typing import Awaitable
-from typing import NoReturn
+from typing import Literal
 from typing import Unpack
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,9 +11,10 @@ from pymongo.cursor import Cursor
 from pymongo.results import DeleteResult
 from pymongo.results import InsertOneResult
 from pymongo.results import UpdateResult
+
 from tokka.kwargs import FindKwargs
-from typing import Literal
 from tokka.kwargs import ModelDumpKwargs
+
 
 # TODO: 'Intersection' PEP is under development
 #        it will possible be the best and most accurate to type Pydantic`s model_dump
@@ -195,8 +196,39 @@ class Collection:
         document = model.model_dump(**model_dump_kwargs)
         return self.collection.insert_one(document, **insert_one_kwargs)
 
-    def replace_one(self) -> NoReturn:
-        raise NotImplementedError
+    def replace_one(
+        self,
+        model: BaseModel,
+        replacement: BaseModel,
+        *,
+        upsert: bool = False,
+        return_old: bool = False,
+        filter_by: None | str | list[str] = None,
+        **kwargs: Any,
+    ) -> Awaitable[UpdateResult]:
+        _filter = self._make_filter(model, filter_by)
+        pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+        pymongo_kwargs.pop("projection", None)
+        pymongo_kwargs.pop("filter", None)
+        pymongo_kwargs.pop("replacement", None)
+        pymongo_kwargs.pop("upsert", None)
+        pymongo_kwargs.pop("return_document", None)
+
+        # ? see pymongo.collection.ReturnDocument.BEFORE
+        # ? at https://pymongo.readthedocs.io/en/stable/api/pymongo/collection.html#
+        # pymongo.collection.ReturnDocument = False returns the old document
+        # pymongo.collection.ReturnDocument = True returns the new document
+        # Therefore, we need to invert the return_old value to obtain a more
+        # intuitive behavior
+        return_old = not return_old
+
+        pymongo_kwargs.pop("return_document", None)
+
+        _replacement = replacement.model_dump(**model_dump_kwargs)
+
+        return self.collection.replace_one(
+            _filter, _replacement, upsert=upsert, **pymongo_kwargs
+        )
 
     def update_one(
         self,

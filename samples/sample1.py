@@ -26,6 +26,7 @@ if __name__ == "__main__":
     db = DB("tokka", connection=config.mongodb.URI)
     user1 = UserProfile(name="John Doe", email="john.doe@example.com.br")
     user2 = UserProfile(name="Emma Su", email="ema.sue@example.com.br")
+    user3 = UserProfile(name="Joanne Doe", email="joanne.doe@example.com.br")
 
     async def crud() -> None:
         insert_results = await asyncio.gather(
@@ -63,6 +64,11 @@ if __name__ == "__main__":
 
         user1.name = "Mario"
 
+        find_one_and_delete_results = await asyncio.gather(
+            db.user_profiles.find_one_and_delete(user1, filter_by="name"),
+            db.user_profiles.find_one_and_delete(user2, filter_by="name"),
+        )
+
         find_one_and_set = await asyncio.gather(
             db.user_profiles.find_one_and_set(
                 user1, exclude="email", filter_by="name", return_old=False
@@ -72,9 +78,8 @@ if __name__ == "__main__":
             ),
         )
 
-        find_one_and_delete_results = await asyncio.gather(
-            db.user_profiles.find_one_and_delete(user1, filter_by="name"),
-            db.user_profiles.find_one_and_delete(user2, filter_by="name"),
+        replace_one_results = await asyncio.gather(
+            db.user_profiles.replace_one(user2, user3, filter_by="email"),
         )
 
         ic(
@@ -83,9 +88,13 @@ if __name__ == "__main__":
             find_results,
             find_one_and_replace_results,
             find_one_and_update_results,
+            find_one_and_delete_results,
             find_one_and_set,
-            find_one_and_delete_results
+            replace_one_results
+            
+
         )
+
         await db.user_profiles.collection.delete_many({})
 
     asyncio.run(crud())

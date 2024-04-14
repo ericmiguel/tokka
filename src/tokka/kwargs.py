@@ -3,12 +3,12 @@ from typing import Literal
 from typing import Mapping
 from typing import Sequence
 from typing import Tuple
-from typing import TypedDict
 from typing import TypeAlias
+from typing import TypedDict
 
 from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.typings import _CollationIn
 from pydantic.main import IncEx
+from pymongo.typings import _CollationIn
 
 
 Sort: TypeAlias = tuple[
