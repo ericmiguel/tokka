@@ -2,42 +2,38 @@
 
 import asyncio
 
+import config
+from icecream import ic
 from pydantic import BaseModel
 from tokka import Collection
 from tokka import Database
-from icecream import ic
-import config
+
 
 # Define a Pydantic model to represent the data
-class User(BaseModel):
+class UserProfile(BaseModel):
     name: str
     email: str
 
+
 # Create a subclass of Database to define the your collections
-class MyDB(Database):
+class DB(Database):
     @property
-    def profiles(self) -> Collection:
+    def user_profiles(self) -> Collection:
         return self.get_collection("profiles")
-
-# Define some operations
-async def set(coll: Collection) -> str:
-    await coll.set(user, match="name", upsert=True, exclude="email")
-    return f"set: done!"
-
-async def insert(coll: Collection) -> str:
-    await coll.insert_one(user)
-    await coll.insert_one(user, exclude="name")
-    return f"insert: done!"
 
 
 if __name__ == "__main__":
-    mydb = MyDB("tokka", connection=config.mongodb.URI)
-    user = User(name="John Doe", email="john.doe@example.com.br")
+    db = DB("tokka", connection=config.mongodb.URI)
+    user = UserProfile(name="John Doe", email="john.doe@example.com.br")
 
-    async def main() -> None:
-        collection = mydb.profiles
-        messages = await asyncio.gather(set(collection), insert(collection))
+    async def tokka_crud() -> None:
+        messages = await asyncio.gather(
+            db.user_profiles.insert_one(user),
+            db.user_profiles.insert_one(user, exclude="name"),
+            db.user_profiles.set(user, match="name", upsert=True, exclude="email"),
+        )
+
         ic(messages)
 
-    asyncio.run(main())
-    mydb.close()
+    asyncio.run(tokka_crud())
+    db.close()
