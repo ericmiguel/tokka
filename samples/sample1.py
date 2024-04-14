@@ -52,7 +52,40 @@ if __name__ == "__main__":
             ),
         )
 
-        ic(insert_results, set_results, find_results, find_one_and_replace_results)
+        find_one_and_update_results = await asyncio.gather(
+            db.user_profiles.find_one_and_update(
+                user1, {"$set": {"name": "Mario"}}, filter_by="name", return_old=False
+            ),
+            db.user_profiles.find_one_and_update(
+                user2, {"$set": {"name": "Maria"}}, filter_by="name", return_old=True
+            ),
+        )
+
+        user1.name = "Mario"
+
+        find_one_and_set = await asyncio.gather(
+            db.user_profiles.find_one_and_set(
+                user1, exclude="email", filter_by="name", return_old=False
+            ),
+            db.user_profiles.find_one_and_set(
+                user2, exclude="email", filter_by="name", return_old=True
+            ),
+        )
+
+        find_one_and_delete_results = await asyncio.gather(
+            db.user_profiles.find_one_and_delete(user1, filter_by="name"),
+            db.user_profiles.find_one_and_delete(user2, filter_by="name"),
+        )
+
+        ic(
+            insert_results,
+            set_results,
+            find_results,
+            find_one_and_replace_results,
+            find_one_and_update_results,
+            find_one_and_set,
+            find_one_and_delete_results
+        )
         await db.user_profiles.collection.delete_many({})
 
     asyncio.run(crud())
