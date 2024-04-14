@@ -16,12 +16,15 @@ from typing import Literal
 from tokka.types import ModelDumpKwargs
 
 
+
 class Collection:
     def __init__(self, collection: AsyncIOMotorCollection) -> None:
         self.collection = collection
 
     @staticmethod
-    def _pop_model_dump_kwargs(kwargs: dict[str, Any]) -> tuple[dict[str, Any], ModelDumpKwargs]:
+    def _pop_model_dump_kwargs(
+        kwargs: dict[str, Any],
+    ) -> tuple[dict[str, Any], ModelDumpKwargs]:
         model_dump_kwargs: ModelDumpKwargs = {
             "mode": kwargs.pop("mode", "python"),
             "include": kwargs.pop("include", None),
@@ -67,20 +70,42 @@ class Collection:
         **kwargs: Unpack[FindKwargs],
     ) -> Awaitable[Cursor] | Awaitable[None]:
         filter = self._make_filter(model, filter_by)
-        return self.collection.find_one(filter, kwargs)
+        return self.collection.find_one(filter, **kwargs)
 
     def find_one_and_replace(
         self,
         model: BaseModel,
         replacement: BaseModel,
         *,
+        upsert: bool = False,
+        return_old: bool = False,
         filter_by: None | str | list[str] = None,
         hide: set[str] = set("_id"),
+        **kwargs: Any,
     ) -> Awaitable[ReturnDocument]:
         _filter = self._make_filter(model, filter_by)
-        _replacement = replacement.model_dump()
+        pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+        pymongo_kwargs.pop("upsert", None)
+        pymongo_kwargs.pop("return_document", None)
+
+        # ? see pymongo.collection.ReturnDocument.BEFORE
+        # ? at https://pymongo.readthedocs.io/en/stable/api/pymongo/collection.html#
+        # pymongo.collection.ReturnDocument = False returns the old document
+        # pymongo.collection.ReturnDocument = True returns the new document
+        # Therefore, we need to invert the return_old value to obtain a more
+        # intuitive behavior
+        return_old = not return_old
+        
+        _replacement = replacement.model_dump(**model_dump_kwargs)
         _projection = self._make_projection(hide)
-        return self.collection.find_one_and_replace(_filter, _replacement, _projection)
+        return self.collection.find_one_and_replace(
+            _filter,
+            _replacement,
+            _projection,
+            upsert=upsert,
+            return_document=return_old,
+            **pymongo_kwargs
+        )
 
     def find_one_and_delete(self) -> NoReturn:
         raise NotImplementedError
@@ -90,9 +115,7 @@ class Collection:
     ) -> Awaitable[ReturnDocument]:
         raise NotImplementedError
 
-    def insert_one(
-        self, model: BaseModel, **kwargs: Any
-    ) -> Awaitable[InsertOneResult]:
+    def insert_one(self, model: BaseModel, **kwargs: Any) -> Awaitable[InsertOneResult]:
         insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         document = model.model_dump(**model_dump_kwargs)
         return self.collection.insert_one(document, **insert_one_kwargs)
