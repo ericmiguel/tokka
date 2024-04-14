@@ -42,7 +42,7 @@ class Collection:
         return model_dump_kwargs
 
     @staticmethod
-    def _create_query_filter(
+    def _make_filter(
         model: BaseModel, by: None | str | list[str] = None
     ) -> dict[str, Any]:
         match by:
@@ -61,10 +61,11 @@ class Collection:
         filter_by: None | str | list[str] = None,
         **kwargs: Unpack[FindKwargs],
     ) -> Awaitable[Cursor] | Awaitable[None]:
-        filter = self._create_query_filter(model, filter_by)
+        filter = self._make_filter(model, filter_by)
         return self.collection.find_one(filter, kwargs)
 
     def find_one_and_replace(self) -> Awaitable[ReturnDocument]:
+        
         raise NotImplementedError
 
     def find_one_and_delete(self) -> NoReturn:
@@ -94,7 +95,7 @@ class Collection:
         upsert: bool = False,
     ) -> Awaitable[UpdateResult]:
         update = model.model_dump(*dump_kwargs)
-        filter = self._create_query_filter(model, filter_by)
+        filter = self._make_filter(model, filter_by)
         return self.collection.update_one(filter, update, upsert)
 
     def set(
@@ -107,7 +108,7 @@ class Collection:
     ) -> Awaitable[UpdateResult]:
         model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
 
-        filter = self._create_query_filter(model, match)
+        filter = self._make_filter(model, match)
         update = {"$set": model.model_dump(**model_dump_kwargs)}
 
         return self.collection.update_one(filter, update, upsert)
