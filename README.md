@@ -17,6 +17,13 @@
 </a>
 </p>
 
+## Installation
+
+```bash
+pip install tokka
+
+```
+
 ## Quick usage
 
 ```python
