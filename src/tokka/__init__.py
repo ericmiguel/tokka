@@ -123,8 +123,17 @@ class Collection:
             **pymongo_kwargs,
         )
 
-    def find_one_and_delete(self) -> NoReturn:
-        raise NotImplementedError
+    def find_one_and_delete(
+        self,
+        model: BaseModel,
+        *,
+        filter_by: None | str | list[str] = None,
+        hide: set[str] = set("_id"),
+        **kwargs: Any,
+    ) -> Awaitable[dict[str, Any]]:
+        _filter = self._make_filter(model, filter_by)
+        _projection = self._make_projection(hide)
+        return self.collection.find_one_and_delete(_filter, _projection, **kwargs)
 
     def find_one_and_update(
         self,
