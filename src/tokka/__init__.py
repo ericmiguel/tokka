@@ -66,11 +66,15 @@ class Collection:
     def find_one(
         self,
         model: BaseModel,
+        *,
+        hide: set[str] = set("_id"),
         filter_by: None | str | list[str] = None,
         **kwargs: Unpack[FindKwargs],
     ) -> Awaitable[Cursor] | Awaitable[None]:
-        filter = self._make_filter(model, filter_by)
-        return self.collection.find_one(filter, **kwargs)
+        _filter = self._make_filter(model, filter_by)
+        _projection = self._make_projection(hide)
+        kwargs.pop("projection", None)
+        return self.collection.find_one(_filter, _projection, **kwargs)
 
     def find_one_and_replace(
         self,
@@ -95,6 +99,8 @@ class Collection:
         # Therefore, we need to invert the return_old value to obtain a more
         # intuitive behavior
         return_old = not return_old
+
+        pymongo_kwargs.pop("return_document", None)
         
         _replacement = replacement.model_dump(**model_dump_kwargs)
         _projection = self._make_projection(hide)
