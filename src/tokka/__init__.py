@@ -201,12 +201,13 @@ class Collection:
     def update_one(
         self,
         model: BaseModel,
-        dump_kwargs: None | dict[str, Any] = None,
         *,
         filter_by: None | str | list[str] = None,
         upsert: bool = False,
+        **kwargs: dict[str, Any],
     ) -> Awaitable[UpdateResult]:
-        _update = model.model_dump(*dump_kwargs)
+        _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+        _update = model.model_dump(*model_dump_kwargs)
         _filter = self._make_filter(model, filter_by)
         return self.collection.update_one(_filter, _update, upsert)
 
