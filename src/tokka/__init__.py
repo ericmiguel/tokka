@@ -128,8 +128,36 @@ class Collection:
 
     def find_one_and_update(
         self,
+        model: BaseModel,
+        update: dict[str, Any],
+        *,
+        upsert: bool = False,
+        return_old: bool = False,
+        filter_by: None | str | list[str] = None,
+        hide: set[str] = set("_id"),
+        **kwargs: Any,
     ) -> Awaitable[ReturnDocument]:
-        raise NotImplementedError
+        _filter = self._make_filter(model, filter_by)
+        kwargs.pop("projection", None)
+        kwargs.pop("filter", None)
+        kwargs.pop("replacement", None)
+        kwargs.pop("upsert", None)
+        kwargs.pop("return_document", None)
+
+        # NOTE: see find_one_and_replace method for more details
+        return_old = not return_old
+
+        kwargs.pop("return_document", None)
+
+        _projection = self._make_projection(hide)
+        return self.collection.find_one_and_update(
+            _filter,
+            update,
+            _projection,
+            upsert=upsert,
+            return_document=return_old,
+            **kwargs,
+        )
 
     def insert_one(self, model: BaseModel, **kwargs: Any) -> Awaitable[InsertOneResult]:
         insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
