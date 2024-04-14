@@ -16,12 +16,13 @@ from typing import Literal
 from tokka.kwargs import ModelDumpKwargs
 
 # TODO: 'Intersection' PEP is under development
-#        it will possible be the best and most accurate to type Pydantic`s model_dump 
-#        and Pymongo's Kwargs. 
+#        it will possible be the best and most accurate to type Pydantic`s model_dump
+#        and Pymongo's Kwargs.
 #
 # ? Related issues:
 #        https://github.com/python/typing/issues/213
 #        https://github.com/python/typing/issues/1445
+
 
 class Collection:
     def __init__(self, collection: AsyncIOMotorCollection) -> None:
@@ -110,7 +111,7 @@ class Collection:
         return_old = not return_old
 
         pymongo_kwargs.pop("return_document", None)
-        
+
         _replacement = replacement.model_dump(**model_dump_kwargs)
         _projection = self._make_projection(hide)
         return self.collection.find_one_and_replace(
@@ -119,7 +120,7 @@ class Collection:
             _projection,
             upsert=upsert,
             return_document=return_old,
-            **pymongo_kwargs
+            **pymongo_kwargs,
         )
 
     def find_one_and_delete(self) -> NoReturn:
