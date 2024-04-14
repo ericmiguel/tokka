@@ -4,10 +4,26 @@ from typing import Mapping
 from typing import Sequence
 from typing import Tuple
 from typing import TypedDict
+from typing import TypeAlias
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.typings import _CollationIn
 from pydantic.main import IncEx
+
+
+Sort: TypeAlias = tuple[
+    str | Sequence[str | Tuple[str, int | str | Mapping[str, Any]]] | Mapping[str, Any],
+    int | str,
+]
+
+MinMax: TypeAlias = (
+    Sequence[str | Tuple[str, int | str | Mapping[str, Any]]] | Mapping[str, Any]
+)
+
+Hint: TypeAlias = (
+    str | Sequence[str | Tuple[str, int | str | Mapping[str, Any]]] | Mapping[str, Any]
+)
+
 
 class FindKwargs(TypedDict, total=False):
     projection: dict[str, Any]
@@ -18,25 +34,16 @@ class FindKwargs(TypedDict, total=False):
 
     # see cursor.html#pymongo.cursor.Cursor.sort
     # at https://pymongo.readthedocs.io/en/stable/api/pymongo/
-    sort: tuple[
-        str
-        | Sequence[str | Tuple[str, int | str | Mapping[str, Any]]]
-        | Mapping[str, Any],
-        int | str,
-    ]
+    sort: Sort
     allow_partial_results: bool
     oplog_replay: bool
     batch_size: int
     collation: _CollationIn
-    hint: (
-        str
-        | Sequence[str | Tuple[str, int | str | Mapping[str, Any]]]
-        | Mapping[str, Any]
-    )
+    hint: Hint
     max_scan: int
     max_time_ms: int
-    max: Sequence[str | Tuple[str, int | str | Mapping[str, Any]]] | Mapping[str, Any]
-    min: Sequence[str | Tuple[str, int | str | Mapping[str, Any]]] | Mapping[str, Any]
+    max: MinMax
+    min: MinMax
     return_key: bool
     show_record_id: bool
     snapshot: bool
@@ -47,7 +54,7 @@ class FindKwargs(TypedDict, total=False):
 
 class ModelDumpKwargs(TypedDict, total=False):
     mode: Literal["json", "python"]
-    include: IncEx 
+    include: IncEx
     exclude: IncEx
     by_alias: bool
     exclude_unset: bool
