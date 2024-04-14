@@ -1,7 +1,7 @@
 [project]
 name = "tokka"
-version = "0.1.0"
-description = "A humble Pydantic-based MongoDB ODM"
+version = "0.1.0b"
+description = "A thin async layer between Pydantic and MongoDB"
 authors = [
     {name = "ericmiguel", email = "eric.mrib@gmail.com"},
 ]
