@@ -7,7 +7,7 @@ from typing import TypedDict
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.typings import _CollationIn
-
+from pydantic.main import IncEx
 
 class FindKwargs(TypedDict, total=False):
     projection: dict[str, Any]
@@ -43,3 +43,15 @@ class FindKwargs(TypedDict, total=False):
     comment: Any
     session: AsyncIOMotorClient
     allow_disk_use: bool
+
+
+class ModelDumpKwargs(TypedDict, total=False):
+    mode: Literal["json", "python"]
+    include: IncEx
+    exclude: IncEx
+    by_alias: bool
+    exclude_unset: bool
+    exclude_defaults: bool
+    exclude_none: bool
+    round_trip: bool
+    warnings: bool

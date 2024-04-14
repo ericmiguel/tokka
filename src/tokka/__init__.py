@@ -11,8 +11,9 @@ from pymongo.cursor import Cursor
 from pymongo.results import DeleteResult
 from pymongo.results import InsertOneResult
 from pymongo.results import UpdateResult
-
 from tokka.types import FindKwargs
+from typing import Literal
+from tokka.types import ModelDumpKwargs
 
 
 class Collection:
@@ -20,8 +21,8 @@ class Collection:
         self.collection = collection
 
     @staticmethod
-    def _pop_model_dump_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
-        model_dump_kwargs = {
+    def _pop_model_dump_kwargs(kwargs: dict[str, Any]) -> tuple[dict[str, Any], ModelDumpKwargs]:
+        model_dump_kwargs: ModelDumpKwargs = {
             "mode": kwargs.pop("mode", "python"),
             "include": kwargs.pop("include", None),
             "exclude": kwargs.pop("exclude", None),
@@ -34,12 +35,12 @@ class Collection:
         }
 
         if isinstance(model_dump_kwargs["include"], str):
-            model_dump_kwargs["include"] = [model_dump_kwargs["include"]]
+            model_dump_kwargs["include"] = set([model_dump_kwargs["include"]])
 
         if isinstance(model_dump_kwargs["exclude"], str):
-            model_dump_kwargs["exclude"] = [model_dump_kwargs["exclude"]]
+            model_dump_kwargs["exclude"] = set([model_dump_kwargs["exclude"]])
 
-        return model_dump_kwargs
+        return kwargs, model_dump_kwargs
 
     @staticmethod
     def _make_filter(
@@ -55,6 +56,10 @@ class Collection:
 
         return filter
 
+    @staticmethod
+    def _make_projection(exclude_keys: set[str]) -> dict[str, Literal[0]]:
+        return {key: 0 for key in exclude_keys}
+
     def find_one(
         self,
         model: BaseModel,
@@ -64,9 +69,18 @@ class Collection:
         filter = self._make_filter(model, filter_by)
         return self.collection.find_one(filter, kwargs)
 
-    def find_one_and_replace(self) -> Awaitable[ReturnDocument]:
-        
-        raise NotImplementedError
+    def find_one_and_replace(
+        self,
+        model: BaseModel,
+        replacement: BaseModel,
+        *,
+        filter_by: None | str | list[str] = None,
+        hide: set[str] = set("_id"),
+    ) -> Awaitable[ReturnDocument]:
+        _filter = self._make_filter(model, filter_by)
+        _replacement = replacement.model_dump()
+        _projection = self._make_projection(hide)
+        return self.collection.find_one_and_replace(_filter, _replacement, _projection)
 
     def find_one_and_delete(self) -> NoReturn:
         raise NotImplementedError
@@ -77,11 +91,11 @@ class Collection:
         raise NotImplementedError
 
     def insert_one(
-        self, model: BaseModel, *args: Any, **kwargs: Any
+        self, model: BaseModel, **kwargs: Any
     ) -> Awaitable[InsertOneResult]:
-        model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+        insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         document = model.model_dump(**model_dump_kwargs)
-        return self.collection.insert_one(document, *args, **kwargs)
+        return self.collection.insert_one(document, **insert_one_kwargs)
 
     def replace_one(self) -> NoReturn:
         raise NotImplementedError
@@ -106,12 +120,11 @@ class Collection:
         upsert: bool = False,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
-        model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
-
+        update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         filter = self._make_filter(model, match)
         update = {"$set": model.model_dump(**model_dump_kwargs)}
 
-        return self.collection.update_one(filter, update, upsert)
+        return self.collection.update_one(filter, update, upsert, **update_one_kwargs)
 
     def delete_one(self) -> Awaitable[DeleteResult]:
         raise NotImplementedError
