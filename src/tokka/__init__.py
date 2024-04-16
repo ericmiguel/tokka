@@ -57,6 +57,24 @@ class Collection:
     def _make_filter(
         model: BaseModel, by: None | str | list[str] = None
     ) -> dict[str, Any]:
+        """
+        Create a query filter based on the model attributes.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        by : None | str | list[str], optional
+            The attribute(s) to filter the query by, by default None.
+            Case None, the filter will use all the model attributes.
+            Case str, the filter will use only the specified attribute.
+            Case list, the filter will use all the specified attributes.
+
+        Returns
+        -------
+        dict[str, Any]
+            Filter mapping attribute names to their values.
+        """        
         match by:
             case x if isinstance(x, str):
                 _filter = {x: getattr(model, x)}
