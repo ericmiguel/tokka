@@ -414,6 +414,23 @@ class Collection:
         upsert: bool = False,
         **kwargs: dict[str, Any],
     ) -> Awaitable[UpdateResult]:
+        """
+        MongoDB update_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+
+        Returns
+        -------
+        Awaitable[UpdateResult]
+            Some MongoDB internal infos about the query result.
+        """        
         _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _update = model.model_dump(*model_dump_kwargs)
         _filter = self._make_filter(model, filter_by)
