@@ -1,3 +1,28 @@
+"""
+A thin layer between Pydantic and MongoDB/Motor Async.
+
+Tokka is a MongoDB/Motor Async wrapper for Pydantic models.
+
+As a heavy Pydantic/ FastAPI user, I faced myself writing some recurrent
+boilerplate code to make things work and remain pleasantly readable when on projects
+involving MongoDB.
+
+Nowadays, Pydantic-core is written in Rust, and it's blazing fast. So, Tokka abuses
+from Pydantic's model_dump method to serialize Pydantic models into
+Dict/MongoDB documents.
+
+No magic, no complex things, only dump. I tried to keep the code as simple as possible
+and to not fall deep into Pydantic's internals. I also tried to keep the code as close
+as possible to Pymongo's API, so it's familiar to understand and use. But I took some
+liberties to make things more Pythonic adding some syntactic sugar here and there, as
+well as some extra agnostic functionalities. In addition, Pymongo methods has some
+pretty strange kwargs documentation and a not-so-good type annotations, then I worked
+on trying make it a little bit friendly.
+
+Personally, I see Tokka as an ingenuous package for lazy people like me.
+If you can make some use of it or it make you write less code, I'll be glad.
+"""
+
 from typing import Any
 from typing import Awaitable
 from typing import Literal
@@ -57,6 +82,24 @@ class Collection:
     def _make_filter(
         model: BaseModel, by: None | str | list[str] = None
     ) -> dict[str, Any]:
+        """
+        Create a query filter based on the model attributes.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        by : None | str | list[str], optional
+            The attribute(s) to filter the query by, by default None.
+            Case None, the filter will use all the model attributes.
+            Case str, the filter will use only the specified attribute.
+            Case list, the filter will use all the specified attributes.
+
+        Returns
+        -------
+        dict[str, Any]
+            Filter mapping attribute names to their values.
+        """
         match by:
             case x if isinstance(x, str):
                 _filter = {x: getattr(model, x)}
@@ -69,6 +112,19 @@ class Collection:
 
     @staticmethod
     def _make_projection(exclude_keys: set[str]) -> dict[str, Literal[0]]:
+        """
+        Create a projection to exclude keys from the query result.
+
+        Parameters
+        ----------
+        exclude_keys : set[str]
+            The keys to exclude from the query result.
+
+        Returns
+        -------
+        dict[str, Literal[0]]
+            Projection mapping attribute names to 0. MongoDB uses 0 to exclude.
+        """
         return {key: 0 for key in exclude_keys}
 
     def find_one(
@@ -79,6 +135,25 @@ class Collection:
         filter_by: None | str | list[str] = None,
         **kwargs: Unpack[FindKwargs],
     ) -> Awaitable[Cursor] | Awaitable[None]:
+        """
+        MongoDB find_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection)
+            , by default set("_id")
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+
+        Returns
+        -------
+        Awaitable[Cursor] | Awaitable[None]
+            MongoDB cursor with the query result, or None case any document was
+            found.
+        """
         _filter = self._make_filter(model, filter_by)
         _projection = self._make_projection(hide)
         kwargs.pop("projection", None)
@@ -95,6 +170,31 @@ class Collection:
         hide: set[str] = set("_id"),
         **kwargs: Any,
     ) -> Awaitable[ReturnDocument]:
+        """
+        MongoDB find_one_and_replace method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        replacement : BaseModel
+            Pydantic model instance to replace the found document.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+        return_old : bool, optional
+            If True, returns the old (replaced) document, by default False.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection),
+            by default set("_id")
+
+        Returns
+        -------
+        Awaitable[ReturnDocument]
+            The old (replaced) or new (replacer) document, depending on the
+            return_old parameter.
+        """
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         pymongo_kwargs.pop("projection", None)
@@ -132,6 +232,24 @@ class Collection:
         hide: set[str] = set("_id"),
         **kwargs: Any,
     ) -> Awaitable[dict[str, Any]]:
+        """
+        MongoDB find_one_and_delete method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection),
+            by default set("_id")
+
+        Returns
+        -------
+        Awaitable[dict[str, Any]]
+            The deleted document.
+        """
         _filter = self._make_filter(model, filter_by)
         _projection = self._make_projection(hide)
         return self.collection.find_one_and_delete(_filter, _projection, **kwargs)
@@ -147,6 +265,31 @@ class Collection:
         hide: set[str] = set("_id"),
         **kwargs: Any,
     ) -> Awaitable[ReturnDocument]:
+        """
+        MongoDB find_one_and_update method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        update : dict[str, Any]
+            The update to apply over the found document.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+        return_old : bool, optional
+            If True, returns the old (replaced) document, by default False.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection),
+            by default set("_id")
+
+        Returns
+        -------
+        Awaitable[ReturnDocument]
+            The old (replaced) or new (updated) document, depending on the
+            return_old parameter.
+        """
         _filter = self._make_filter(model, filter_by)
         kwargs.pop("projection", None)
         kwargs.pop("filter", None)
@@ -179,6 +322,29 @@ class Collection:
         hide: set[str] = set("_id"),
         **kwargs: Any,
     ) -> Awaitable[ReturnDocument]:
+        """
+        MongoDB find_one_and_update method with $set operator by default.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+        return_old : bool, optional
+            If True, returns the old (replaced) document, by default False.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection),
+            by default set("_id")
+
+        Returns
+        -------
+        Awaitable[ReturnDocument]
+            The old (replaced) or new (updated) document, depending on the
+            return_old parameter.
+        """
         _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _update = {"$set": model.model_dump(**model_dump_kwargs)}
         return self.find_one_and_update(
@@ -192,6 +358,19 @@ class Collection:
         )
 
     def insert_one(self, model: BaseModel, **kwargs: Any) -> Awaitable[InsertOneResult]:
+        """
+        MongoDB insert_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+
+        Returns
+        -------
+        Awaitable[InsertOneResult]
+            Some MongoDB internal infos about the query result.
+        """
         insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         document = model.model_dump(**model_dump_kwargs)
         return self.collection.insert_one(document, **insert_one_kwargs)
@@ -206,6 +385,27 @@ class Collection:
         filter_by: None | str | list[str] = None,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
+        """
+        MongoDB replace_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        replacement : BaseModel
+            Pydantic model instance to replace the found document.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+        return_old : bool, optional
+            If True, returns the old  (replaced) document, by default False.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+
+        Returns
+        -------
+        Awaitable[UpdateResult]
+            Some MongoDB internal infos about the query result.
+        """
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         pymongo_kwargs.pop("projection", None)
@@ -238,6 +438,23 @@ class Collection:
         upsert: bool = False,
         **kwargs: dict[str, Any],
     ) -> Awaitable[UpdateResult]:
+        """
+        MongoDB update_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+
+        Returns
+        -------
+        Awaitable[UpdateResult]
+            Some MongoDB internal infos about the query result.
+        """
         _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _update = model.model_dump(*model_dump_kwargs)
         _filter = self._make_filter(model, filter_by)
@@ -251,6 +468,23 @@ class Collection:
         upsert: bool = False,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
+        """
+        Update a document using the $set operator.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        match : None | str | list[str]
+            The attribute(s) to filter the query by.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+
+        Returns
+        -------
+        Awaitable[UpdateResult]
+            Some MongoDB internal infos about the query result.
+        """
         update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _filter = self._make_filter(model, match)
         _update = {"$set": model.model_dump(**model_dump_kwargs)}
@@ -262,7 +496,19 @@ class Collection:
 
 
 class Database:
+    """A MongoDB/Motor Async database wrapper, as convenience."""
+
     def __init__(self, name: str, *, connection: str | AsyncIOMotorClient) -> None:
+        """
+        Database init.
+
+        Parameters
+        ----------
+        name : str
+            MongoDB database name.
+        connection : str | AsyncIOMotorClient
+            MongoDB connection URI or AsyncIOMotorClient instance.
+        """
         match connection:
             case str():
                 self.client = AsyncIOMotorClient(connection)
@@ -272,18 +518,25 @@ class Database:
         self._connection = self.client.get_database(name)
 
     def get_collection(self, name: str) -> Collection:
+        """Get a MongoDB (Tokka wrapped) collection."""
         return Collection(self._connection.get_collection(name))
 
     def close(self) -> None:
+        """Close the MongoDB connection."""
         self.client.close()
 
 
 class Client:
+    """A MongoDB/Motor Async client wrapper, as convenience."""
+
     def __init__(self, uri: str) -> None:
+        """Client init. Connects to the MongoDB server using the URI."""
         self.client = AsyncIOMotorClient(uri)
 
     def get_database(self, name: str) -> Database:
+        """Get a MongoDB (Tokka wrapped) database by name."""
         return Database(name, connection=self.client)
 
     def close(self) -> None:
+        """Close the MongoDB connection."""
         self.client.close()

@@ -1,3 +1,5 @@
+"""Type aliases and TypedDicts for the kwargs of the methods in the tokka module."""
+
 from typing import Any
 from typing import Literal
 from typing import Mapping
@@ -26,6 +28,8 @@ Hint: TypeAlias = (
 
 
 class FindKwargs(TypedDict, total=False):
+    """MongoDB find method keyword arguments."""
+
     projection: dict[str, Any]
     skip: int
     limit: int
@@ -53,6 +57,8 @@ class FindKwargs(TypedDict, total=False):
 
 
 class ModelDumpKwargs(TypedDict, total=False):
+    """Pydantic model dump method keyword arguments."""
+
     mode: Literal["json", "python"]
     include: IncEx
     exclude: IncEx
