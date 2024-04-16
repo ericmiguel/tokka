@@ -87,6 +87,19 @@ class Collection:
 
     @staticmethod
     def _make_projection(exclude_keys: set[str]) -> dict[str, Literal[0]]:
+        """
+        Create a projection to exclude keys from the query result.
+
+        Parameters
+        ----------
+        exclude_keys : set[str]
+            The keys to exclude from the query result.
+
+        Returns
+        -------
+        dict[str, Literal[0]]
+            Projection mapping attribute names to 0. MongoDB uses 0 to exclude.
+        """        
         return {key: 0 for key in exclude_keys}
 
     def find_one(
