@@ -444,6 +444,23 @@ class Collection:
         upsert: bool = False,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
+        """
+        Update a document using the $set operator.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        match : None | str | list[str]
+            The attribute(s) to filter the query by.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+
+        Returns
+        -------
+        Awaitable[UpdateResult]
+            Some MongoDB internal infos about the query result.
+        """        
         update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _filter = self._make_filter(model, match)
         _update = {"$set": model.model_dump(**model_dump_kwargs)}
