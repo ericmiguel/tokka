@@ -99,7 +99,7 @@ class Collection:
         -------
         dict[str, Any]
             Filter mapping attribute names to their values.
-        """        
+        """
         match by:
             case x if isinstance(x, str):
                 _filter = {x: getattr(model, x)}
@@ -124,7 +124,7 @@ class Collection:
         -------
         dict[str, Literal[0]]
             Projection mapping attribute names to 0. MongoDB uses 0 to exclude.
-        """        
+        """
         return {key: 0 for key in exclude_keys}
 
     def find_one(
@@ -153,7 +153,7 @@ class Collection:
         Awaitable[Cursor] | Awaitable[None]
             MongoDB cursor with the query result, or None case any document was
             found.
-        """        
+        """
         _filter = self._make_filter(model, filter_by)
         _projection = self._make_projection(hide)
         kwargs.pop("projection", None)
@@ -194,8 +194,7 @@ class Collection:
         Awaitable[ReturnDocument]
             The old (replaced) or new (replacer) document, depending on the
             return_old parameter.
-        """        
-
+        """
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         pymongo_kwargs.pop("projection", None)
@@ -250,7 +249,7 @@ class Collection:
         -------
         Awaitable[dict[str, Any]]
             The deleted document.
-        """        
+        """
         _filter = self._make_filter(model, filter_by)
         _projection = self._make_projection(hide)
         return self.collection.find_one_and_delete(_filter, _projection, **kwargs)
@@ -345,7 +344,7 @@ class Collection:
         Awaitable[ReturnDocument]
             The old (replaced) or new (updated) document, depending on the
             return_old parameter.
-        """        
+        """
         _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _update = {"$set": model.model_dump(**model_dump_kwargs)}
         return self.find_one_and_update(
@@ -371,7 +370,7 @@ class Collection:
         -------
         Awaitable[InsertOneResult]
             Some MongoDB internal infos about the query result.
-        """        
+        """
         insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         document = model.model_dump(**model_dump_kwargs)
         return self.collection.insert_one(document, **insert_one_kwargs)
@@ -406,7 +405,7 @@ class Collection:
         -------
         Awaitable[UpdateResult]
             Some MongoDB internal infos about the query result.
-        """        
+        """
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         pymongo_kwargs.pop("projection", None)
@@ -455,7 +454,7 @@ class Collection:
         -------
         Awaitable[UpdateResult]
             Some MongoDB internal infos about the query result.
-        """        
+        """
         _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _update = model.model_dump(*model_dump_kwargs)
         _filter = self._make_filter(model, filter_by)
@@ -485,7 +484,7 @@ class Collection:
         -------
         Awaitable[UpdateResult]
             Some MongoDB internal infos about the query result.
-        """        
+        """
         update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _filter = self._make_filter(model, match)
         _update = {"$set": model.model_dump(**model_dump_kwargs)}
@@ -509,7 +508,7 @@ class Database:
             MongoDB database name.
         connection : str | AsyncIOMotorClient
             MongoDB connection URI or AsyncIOMotorClient instance.
-        """        
+        """
         match connection:
             case str():
                 self.client = AsyncIOMotorClient(connection)
@@ -528,7 +527,7 @@ class Database:
 
 
 class Client:
-    """A MongoDB/Motor Async client wrapper, as convenience."""	
+    """A MongoDB/Motor Async client wrapper, as convenience."""
 
     def __init__(self, uri: str) -> None:
         """Client init. Connects to the MongoDB server using the URI."""
