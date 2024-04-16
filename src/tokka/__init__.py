@@ -503,11 +503,16 @@ class Database:
 
 
 class Client:
+    """A MongoDB/Motor Async client wrapper, as convenience."""	
+
     def __init__(self, uri: str) -> None:
+        """Client init. Connects to the MongoDB server using the URI."""
         self.client = AsyncIOMotorClient(uri)
 
     def get_database(self, name: str) -> Database:
+        """Get a MongoDB (Tokka wrapped) database by name."""
         return Database(name, connection=self.client)
 
     def close(self) -> None:
+        """Close the MongoDB connection."""
         self.client.close()
