@@ -348,6 +348,27 @@ class Collection:
         filter_by: None | str | list[str] = None,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
+        """
+        MongoDB replace_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        replacement : BaseModel
+            Pydantic model instance to replace the found document.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+        return_old : bool, optional
+            If True, returns the old  (replaced) document, by default False.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+
+        Returns
+        -------
+        Awaitable[UpdateResult]
+            Some MongoDB internal infos about the query result.
+        """        
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         pymongo_kwargs.pop("projection", None)
