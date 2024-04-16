@@ -20,7 +20,7 @@ pretty strange kwargs documentation and a not-so-good type annotations, then I w
 on trying make it a little bit friendly.
 
 Personally, I see Tokka as an ingenuous package for lazy people like me.
-If you can make some use of it or make you write less code, I'll be glad.
+If you can make some use of it or it make you write less code, I'll be glad.
 """
 
 from typing import Any

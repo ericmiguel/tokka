@@ -17,6 +17,30 @@
 </a>
 </p>
 
+## What is
+
+Tokka is a MongoDB/Motor Async wrapper for Pydantic models.
+
+As a heavy Pydantic/ FastAPI user, I faced myself writing some recurrent
+boilerplate code to make things work and remain pleasantly readable when on projects
+involving MongoDB.
+
+Nowadays, Pydantic-core is written in Rust, and it's blazing fast. So, Tokka abuses
+from Pydantic's model_dump method to serialize Pydantic models into
+Dict/MongoDB documents.
+
+No magic, no complex things, only dump. I tried to keep the code as simple as possible
+and to not fall deep into Pydantic's internals. I also tried to keep the code as close
+as possible to Pymongo's API, so it's familiar to understand and use. But I took some
+liberties to make things more Pythonic adding some syntactic sugar here and there, as
+well as some extra agnostic functionalities. In addition, Pymongo methods has some
+pretty strange kwargs documentation and a not-so-good type annotations, then I worked
+on trying make it a little bit friendly.
+
+Personally, I see Tokka as an ingenuous package for lazy people like me.
+If you can make some use of it or it make you write less code, I'll be glad.
+
+
 ## Installation
 
 ```bash
@@ -80,9 +104,16 @@ if __name__ == "__main__":
     db.close()
 ```
 
+## Docs
+
+Tokka is almost a syntatic-sugar package wrapping Motor and Pydantic.
+
+Docstrings and repo samples should be enought to get you running in a few seconds.
+
 ## Benchmarking
 
-Formal benchmarks are still necessary, but initial executions showed an impact of less than <0.1s using Tokka.
+Formal benchmarks are still necessary, but initial executions showed an impact of less
+than <0.1s using Tokka.
 
 ## License
 
