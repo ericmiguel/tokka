@@ -334,6 +334,19 @@ class Collection:
         )
 
     def insert_one(self, model: BaseModel, **kwargs: Any) -> Awaitable[InsertOneResult]:
+        """
+        MongoDB insert_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+
+        Returns
+        -------
+        Awaitable[InsertOneResult]
+            Some MongoDB internal infos about the query result.
+        """        
         insert_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         document = model.model_dump(**model_dump_kwargs)
         return self.collection.insert_one(document, **insert_one_kwargs)
