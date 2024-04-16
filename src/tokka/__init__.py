@@ -241,6 +241,31 @@ class Collection:
         hide: set[str] = set("_id"),
         **kwargs: Any,
     ) -> Awaitable[ReturnDocument]:
+        """
+        MongoDB find_one_and_update method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        update : dict[str, Any]
+            The update to apply over the found document.
+        upsert : bool, optional
+            If True, creates a new document if no document is found, by default False.
+        return_old : bool, optional
+            If True, returns the old (replaced) document, by default False.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection),
+            by default set("_id")
+
+        Returns
+        -------
+        Awaitable[ReturnDocument]
+            The old (replaced) or new (updated) document, depending on the
+            return_old parameter.
+        """
         _filter = self._make_filter(model, filter_by)
         kwargs.pop("projection", None)
         kwargs.pop("filter", None)
