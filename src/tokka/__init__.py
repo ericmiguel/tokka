@@ -208,6 +208,24 @@ class Collection:
         hide: set[str] = set("_id"),
         **kwargs: Any,
     ) -> Awaitable[dict[str, Any]]:
+        """
+        MongoDB find_one_and_delete method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection),
+            by default set("_id")
+
+        Returns
+        -------
+        Awaitable[dict[str, Any]]
+            The deleted document.
+        """        
         _filter = self._make_filter(model, filter_by)
         _projection = self._make_projection(hide)
         return self.collection.find_one_and_delete(_filter, _projection, **kwargs)
