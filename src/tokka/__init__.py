@@ -1,3 +1,26 @@
+"""
+A thin layer between Pydantic and MongoDB/Motor Async.
+
+Tokka is a MongoDB/Motor Async wrapper for Pydantic models.
+
+As a heavy Pydantic/ FastAPI user, I faced myself writing some recurrent
+boilerplate code to make things work and remain pleasantly readable. So,
+I decided to create this humble package to make my life easier.
+
+Nowadays, Pydantic-core is written in Rust, and it's blazing fast. So, Tokka abuses
+from Pydantic's model_dump method to serialize Pydantic models into
+Dict/MongoDB documents. 
+
+I tried to keep the code as simple as possible and to not fall deep into
+Pydantic's internals. I also tried to keep the code as close as possible to Pymongo's
+API, so it's familiar to understand and use. But I took some liberties to make
+things more Pythonic adding some syntactic sugar here and there, as well as 
+some extra functionalities and a better type annotations.
+
+Personally, I see Tokka as a ingenous package for lazy people like myself.
+If you can make some use of it, I'll be glad.
+"""
+
 from typing import Any
 from typing import Awaitable
 from typing import Literal
