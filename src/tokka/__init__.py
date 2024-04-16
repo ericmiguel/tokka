@@ -110,6 +110,25 @@ class Collection:
         filter_by: None | str | list[str] = None,
         **kwargs: Unpack[FindKwargs],
     ) -> Awaitable[Cursor] | Awaitable[None]:
+        """
+        MongoDB find_one method.
+
+        Parameters
+        ----------
+        model : BaseModel
+            Pydantic model instance.
+        hide : set[str], optional
+            Output fields to hide from the query result (MongoDB projection)
+            , by default set("_id")
+        filter_by : None | str | list[str], optional
+            Model keys to use as query filter, by default None.
+
+        Returns
+        -------
+        Awaitable[Cursor] | Awaitable[None]
+            MongoDB cursor with the query result, or None case any document was
+            found.
+        """        
         _filter = self._make_filter(model, filter_by)
         _projection = self._make_projection(hide)
         kwargs.pop("projection", None)
