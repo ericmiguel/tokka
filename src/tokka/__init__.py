@@ -527,7 +527,13 @@ class Database:
 
 
 class Client:
-    """A MongoDB/Motor Async client wrapper, as convenience."""
+    """
+    A MongoDB/Motor Async client wrapper, as convenience.
+
+    Kwargs are the same as the AsyncIOMotorClient and MongoClient classes.
+
+    See: https://pymongo.readthedocs.io/en/stable/api/pymongo/mongo_client.html
+    """
 
     def __init__(self, uri: str, **kwargs: Any) -> None:
         """Client init. Connects to the MongoDB server using the URI."""
