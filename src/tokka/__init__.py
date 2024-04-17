@@ -524,7 +524,7 @@ class Collection:
 class Database:
     """A MongoDB/Motor Async database wrapper, as convenience."""
 
-    def __init__(self, name: str, *, connection: str | AsyncIOMotorClient) -> None:
+    def __init__(self, name: str, *, connection: AsyncIOMotorClient) -> None:
         """
         Database init.
 
@@ -532,15 +532,10 @@ class Database:
         ----------
         name : str
             MongoDB database name.
-        connection : str | AsyncIOMotorClient
-            MongoDB connection URI or AsyncIOMotorClient instance.
+        connection : AsyncIOMotorClient
+            AsyncIOMotorClient instance.
         """
-        match connection:
-            case str():
-                self.client = AsyncIOMotorClient(connection)
-            case AsyncIOMotorClient():
-                self.client = connection
-
+        self.client = connection
         self._connection = self.client.get_database(name)
 
     def get_collection(self, name: str) -> Collection:
