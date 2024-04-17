@@ -537,12 +537,12 @@ class Client:
 
     def __init__(self, uri: str, **kwargs: Any) -> None:
         """Client init. Connects to the MongoDB server using the URI."""
-        self.client = AsyncIOMotorClient(uri, **kwargs)
+        self._client = AsyncIOMotorClient(uri, **kwargs)
 
     def get_database(self, name: str) -> Database:
         """Get a MongoDB (Tokka wrapped) database by name."""
-        return Database(name, connection=self.client)
+        return Database(name, connection=self._client)
 
     def close(self) -> None:
         """Close the MongoDB connection."""
-        self.client.close()
+        self._client.close()
