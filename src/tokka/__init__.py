@@ -23,12 +23,14 @@ Personally, I see Tokka as an ingenuous package for lazy people like me.
 If you can make some use of it or it make you write less code, I'll be glad.
 """
 
-from typing import Any
+from typing import Any, Coroutine
 from typing import Awaitable
 from typing import Literal
 from typing import Unpack
+from typing import Generator
+import contextlib
 
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorClientSession
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pydantic import BaseModel
 from pymongo import ReturnDocument
@@ -541,8 +543,8 @@ class Database:
         connection : AsyncIOMotorClient
             AsyncIOMotorClient instance.
         """
-        self.client = connection
-        self._connection = self.client.get_database(name, **kwargs)
+        self._client = connection
+        self._connection = self._client.get_database(name, **kwargs)
 
     def get_collection(self, name: str, **kwargs: Any) -> Collection:
         """
@@ -556,7 +558,7 @@ class Database:
 
     def close(self) -> None:
         """Close the MongoDB connection."""
-        self.client.close()
+        self._client.close()
 
 
 class Client:
@@ -582,6 +584,12 @@ class Client:
         """
         return Database(name, connection=self._client, **kwargs)
 
+    @property
+    def motor(self) -> AsyncIOMotorClient:
+        """Get the AsyncIOMotorClient instance."""
+        return self._client
+
     def close(self) -> None:
         """Close the MongoDB connection."""
         self._client.close()
+

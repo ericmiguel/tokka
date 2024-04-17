@@ -10,7 +10,7 @@ from tokka import Collection
 async def test_insert_one(
     collection: Collection, client: Client, user_1: BaseModel
 ) -> None:
-    async with await client.client.start_session() as session:
+    async with await client.motor.start_session() as session:
         async with session.start_transaction():
             result = await collection.insert_one(user_1, session=session)
             assert isinstance(result, InsertOneResult) == True
@@ -24,7 +24,7 @@ async def test_find_one(
     collection: Collection,
     user_1: BaseModel,
 ) -> None:
-    async with await client.client.start_session() as session:
+    async with await client.motor.start_session() as session:
         async with session.start_transaction():
             await collection.insert_one(user_1, session=session)
             found = await collection.find_one(user_1, hide={"_id"}, session=session)
@@ -38,7 +38,7 @@ async def test_find_one_and_delete(
     collection: Collection,
     user_1: BaseModel,
 ) -> None:
-    async with await client.client.start_session() as session:
+    async with await client.motor.start_session() as session:
         async with session.start_transaction():
             await collection.insert_one(user_1, session=session)
             found = await collection.find_one_and_delete(
@@ -54,7 +54,7 @@ async def test_find_one_and_update(
     user_1: BaseModel,
     user_1_update: BaseModel
 ) -> None:
-    async with await client.client.start_session() as session:
+    async with await client.motor.start_session() as session:
         async with session.start_transaction():
             await collection.insert_one(user_1, session=session)
             found = await collection.find_one_and_update(
