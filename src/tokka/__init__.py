@@ -524,7 +524,13 @@ class Collection:
 class Database:
     """A MongoDB/Motor Async database wrapper, as convenience."""
 
-    def __init__(self, name: str, *, connection: str | AsyncIOMotorClient) -> None:
+    def __init__(
+            self,
+            name: str,
+            *,
+            connection: AsyncIOMotorClient,
+            **kwargs: Any
+    ) -> None:
         """
         Database init.
 
@@ -532,20 +538,21 @@ class Database:
         ----------
         name : str
             MongoDB database name.
-        connection : str | AsyncIOMotorClient
-            MongoDB connection URI or AsyncIOMotorClient instance.
+        connection : AsyncIOMotorClient
+            AsyncIOMotorClient instance.
         """
-        match connection:
-            case str():
-                self.client = AsyncIOMotorClient(connection)
-            case AsyncIOMotorClient():
-                self.client = connection
+        self.client = connection
+        self._connection = self.client.get_database(name, **kwargs)
 
-        self._connection = self.client.get_database(name)
-
-    def get_collection(self, name: str) -> Collection:
-        """Get a MongoDB (Tokka wrapped) collection."""
-        return Collection(self._connection.get_collection(name))
+    def get_collection(self, name: str, **kwargs: Any) -> Collection:
+        """
+        Get a MongoDB (Tokka wrapped) collection.
+        
+        Same kwargs as:
+        https://pymongo.readthedocs.io/en/stable/api/pymongo/database.html\
+            #pymongo.database.Database.get_collection
+        """
+        return Collection(self._connection.get_collection(name, **kwargs))
 
     def close(self) -> None:
         """Close the MongoDB connection."""
@@ -553,16 +560,28 @@ class Database:
 
 
 class Client:
-    """A MongoDB/Motor Async client wrapper, as convenience."""
+    """
+    A MongoDB/Motor Async client wrapper, as convenience.
 
-    def __init__(self, uri: str) -> None:
+    Kwargs are the same as the AsyncIOMotorClient and MongoClient classes.
+
+    See: https://pymongo.readthedocs.io/en/stable/api/pymongo/mongo_client.html
+    """
+
+    def __init__(self, uri: str, **kwargs: Any) -> None:
         """Client init. Connects to the MongoDB server using the URI."""
-        self.client = AsyncIOMotorClient(uri)
+        self._client = AsyncIOMotorClient(uri, **kwargs)
 
-    def get_database(self, name: str) -> Database:
-        """Get a MongoDB (Tokka wrapped) database by name."""
-        return Database(name, connection=self.client)
+    def get_database(self, name: str, **kwargs: Any) -> Database:
+        """
+        Get a MongoDB (Tokka wrapped) database by name.
+        
+        Same kwargs as:
+        https://pymongo.readthedocs.io/en/stable/api/pymongo/mongo_client.html\
+            #pymongo.mongo_client.MongoClient.get_database
+        """
+        return Database(name, connection=self._client, **kwargs)
 
     def close(self) -> None:
         """Close the MongoDB connection."""
-        self.client.close()
+        self._client.close()
