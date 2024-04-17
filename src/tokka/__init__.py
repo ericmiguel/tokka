@@ -478,6 +478,7 @@ class Collection:
     def set(
         self,
         model: BaseModel,
+        update: dict[str, Any] | BaseModel,
         *,
         match: None | str | list[str],
         upsert: bool = False,
@@ -490,6 +491,8 @@ class Collection:
         ----------
         model : BaseModel
             Pydantic model instance.
+        update: dict[str, Any] | BaseModel
+            The update to apply over the found document.
         match : None | str | list[str]
             The attribute(s) to filter the query by.
         upsert : bool, optional
@@ -502,8 +505,16 @@ class Collection:
         """
         update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
         _filter = self._make_filter(model, match)
-        _update = {"$set": model.model_dump(**model_dump_kwargs)}
+        
+        match update:
+            case x if isinstance(x, dict):
+                update_value = x
+            case xx if isinstance(xx, BaseModel):
+                update_value = xx.model_dump(**model_dump_kwargs)
+            case _:
+                raise ValueError("Update must be a dict or a Pydantic model instance.")
 
+        _update = {"$set": update_value}
         return self.collection.update_one(_filter, _update, upsert, **update_one_kwargs)
 
     def delete_one(self) -> Awaitable[DeleteResult]:
