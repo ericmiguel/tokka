@@ -495,7 +495,7 @@ class Collection:
         model: BaseModel,
         update: dict[str, Any] | BaseModel,
         *,
-        match: None | str | list[str],
+        match: None | str | list[str] = None,
         upsert: bool = False,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
