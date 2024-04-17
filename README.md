@@ -110,6 +110,25 @@ Tokka is almost a syntatic-sugar package wrapping Motor and Pydantic.
 
 Docstrings and repo samples should be enought to get you running in a few seconds.
 
+## Testing
+
+Tokka tests run using transactions. Therefore, the containerized Mongo MUST be
+started as a replica set.
+
+```bash
+docker run --rm -d -p 27017:27017 \
+    -h $(hostname) --name mongo mongo:7.0 \
+    --replSet=tokka && sleep 4
+
+docker exec mongo mongosh --quiet --eval "rs.initiate();"
+```
+
+After container startup, simple run pytest:
+
+```bash
+pytest -s  
+```
+
 ## Benchmarking
 
 Formal benchmarks are still necessary, but initial executions showed an impact of less
