@@ -9,7 +9,6 @@ from typing import TypeAlias
 from typing import TypedDict
 
 from motor.motor_asyncio import AsyncIOMotorClientSession
-from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic.main import IncEx
 from pymongo.typings import _CollationIn
 
