@@ -111,3 +111,17 @@ async def test_replace_one(
             assert result.modified_count == 1
             await session.abort_transaction()
 
+@pytest.mark.asyncio(scope="session")
+async def test_set(
+    client: Client,
+    collection: Collection,
+    user_1: BaseModel,
+) -> None:
+    async with await client.motor.start_session() as session:
+        async with session.start_transaction():
+            await collection.insert_one(user_1, session=session)
+            result = await collection.set(
+                user_1, {"name": "John Doe"}, session=session
+            )
+            assert result.modified_count == 1
+            await session.abort_transaction()
