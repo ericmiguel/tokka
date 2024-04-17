@@ -317,6 +317,7 @@ class Collection:
     def find_one_and_set(
         self,
         model: BaseModel,
+        update: dict[str, Any],
         *,
         upsert: bool = False,
         return_old: bool = False,
@@ -331,6 +332,8 @@ class Collection:
         ----------
         model : BaseModel
             Pydantic model instance.
+        update : dict[str, Any]
+            The update to apply over the found document.
         upsert : bool, optional
             If True, creates a new document if no document is found, by default False.
         return_old : bool, optional
@@ -347,8 +350,18 @@ class Collection:
             The old (replaced) or new (updated) document, depending on the
             return_old parameter.
         """
-        _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
-        _update = {"$set": model.model_dump(**model_dump_kwargs)}
+        foau_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+
+        match update:
+            case x if isinstance(x, dict):
+                update_value = x
+            case xx if isinstance(xx, BaseModel):
+                update_value = xx.model_dump(**model_dump_kwargs)
+            case _:
+                raise ValueError("Update must be a dict or a Pydantic model instance.")
+
+        _update = {"$set": update_value}
+
         return self.find_one_and_update(
             model,
             _update,
@@ -356,7 +369,7 @@ class Collection:
             return_old=return_old,
             filter_by=filter_by,
             hide=hide,
-            **kwargs,
+            **foau_kwargs,
         )
 
     def insert_one(self, model: BaseModel, **kwargs: Any) -> Awaitable[InsertOneResult]:
