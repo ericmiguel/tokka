@@ -518,9 +518,9 @@ class Database:
         self.client = connection
         self._connection = self.client.get_database(name, **kwargs)
 
-    def get_collection(self, name: str) -> Collection:
+    def get_collection(self, name: str, **kwargs: Any) -> Collection:
         """Get a MongoDB (Tokka wrapped) collection."""
-        return Collection(self._connection.get_collection(name))
+        return Collection(self._connection.get_collection(name, **kwargs))
 
     def close(self) -> None:
         """Close the MongoDB connection."""
