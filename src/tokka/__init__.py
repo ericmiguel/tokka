@@ -524,7 +524,13 @@ class Collection:
 class Database:
     """A MongoDB/Motor Async database wrapper, as convenience."""
 
-    def __init__(self, name: str, *, connection: AsyncIOMotorClient) -> None:
+    def __init__(
+            self,
+            name: str,
+            *,
+            connection: AsyncIOMotorClient,
+            **kwargs: Any
+    ) -> None:
         """
         Database init.
 
@@ -536,7 +542,7 @@ class Database:
             AsyncIOMotorClient instance.
         """
         self.client = connection
-        self._connection = self.client.get_database(name)
+        self._connection = self.client.get_database(name, **kwargs)
 
     def get_collection(self, name: str) -> Collection:
         """Get a MongoDB (Tokka wrapped) collection."""
@@ -560,9 +566,9 @@ class Client:
         """Client init. Connects to the MongoDB server using the URI."""
         self._client = AsyncIOMotorClient(uri, **kwargs)
 
-    def get_database(self, name: str) -> Database:
+    def get_database(self, name: str, **kwargs: Any) -> Database:
         """Get a MongoDB (Tokka wrapped) database by name."""
-        return Database(name, connection=self._client)
+        return Database(name, connection=self._client, **kwargs)
 
     def close(self) -> None:
         """Close the MongoDB connection."""
