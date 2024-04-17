@@ -33,6 +33,23 @@ async def test_find_one(
 
 
 @pytest.mark.asyncio(scope="session")
+async def test_find_one_and_replace(
+    client: Client,
+    collection: Collection,
+    user_1: BaseModel,
+    user_2: BaseModel
+) -> None:
+    async with await client.motor.start_session() as session:
+        async with session.start_transaction():
+            await collection.insert_one(user_1, session=session)
+            found = await collection.find_one_and_replace(
+                user_1, user_2, session=session, hide={"_id"}
+            )
+            assert user_2.model_dump() == found
+            await session.abort_transaction()
+
+
+@pytest.mark.asyncio(scope="session")
 async def test_find_one_and_delete(
     client: Client,
     collection: Collection,
