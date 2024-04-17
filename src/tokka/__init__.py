@@ -396,7 +396,6 @@ class Collection:
         replacement: BaseModel,
         *,
         upsert: bool = False,
-        return_old: bool = False,
         filter_by: None | str | list[str] = None,
         **kwargs: Any,
     ) -> Awaitable[UpdateResult]:
@@ -411,8 +410,6 @@ class Collection:
             Pydantic model instance to replace the found document.
         upsert : bool, optional
             If True, creates a new document if no document is found, by default False.
-        return_old : bool, optional
-            If True, returns the old  (replaced) document, by default False.
         filter_by : None | str | list[str], optional
             Model keys to use as query filter, by default None.
 
@@ -423,22 +420,10 @@ class Collection:
         """
         _filter = self._make_filter(model, filter_by)
         pymongo_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
-        pymongo_kwargs.pop("projection", None)
         pymongo_kwargs.pop("filter", None)
         pymongo_kwargs.pop("replacement", None)
         pymongo_kwargs.pop("upsert", None)
-        pymongo_kwargs.pop("return_document", None)
-
-        # ? see pymongo.collection.ReturnDocument.BEFORE
-        # ? at https://pymongo.readthedocs.io/en/stable/api/pymongo/collection.html#
-        # pymongo.collection.ReturnDocument = False returns the old document
-        # pymongo.collection.ReturnDocument = True returns the new document
-        # Therefore, we need to invert the return_old value to obtain a more
-        # intuitive behavior
-        return_old = not return_old
-
-        pymongo_kwargs.pop("return_document", None)
-
+   
         _replacement = replacement.model_dump(**model_dump_kwargs)
 
         return self.collection.replace_one(
