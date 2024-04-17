@@ -8,6 +8,7 @@ from typing import Tuple
 from typing import TypeAlias
 from typing import TypedDict
 
+from motor.motor_asyncio import AsyncIOMotorClientSession
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic.main import IncEx
 from pymongo.typings import _CollationIn
@@ -52,7 +53,7 @@ class FindKwargs(TypedDict, total=False):
     show_record_id: bool
     snapshot: bool
     comment: Any
-    session: AsyncIOMotorClient
+    session: AsyncIOMotorClientSession
     allow_disk_use: bool
 
 
