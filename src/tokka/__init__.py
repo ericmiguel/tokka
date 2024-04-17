@@ -519,7 +519,13 @@ class Database:
         self._connection = self.client.get_database(name, **kwargs)
 
     def get_collection(self, name: str, **kwargs: Any) -> Collection:
-        """Get a MongoDB (Tokka wrapped) collection."""
+        """
+        Get a MongoDB (Tokka wrapped) collection.
+        
+        Same kwargs as:
+        https://pymongo.readthedocs.io/en/stable/api/pymongo/database.html\
+            #pymongo.database.Database.get_collection
+        """
         return Collection(self._connection.get_collection(name, **kwargs))
 
     def close(self) -> None:
@@ -541,7 +547,13 @@ class Client:
         self._client = AsyncIOMotorClient(uri, **kwargs)
 
     def get_database(self, name: str, **kwargs: Any) -> Database:
-        """Get a MongoDB (Tokka wrapped) database by name."""
+        """
+        Get a MongoDB (Tokka wrapped) database by name.
+        
+        Same kwargs as:
+        https://pymongo.readthedocs.io/en/stable/api/pymongo/mongo_client.html\
+            #pymongo.mongo_client.MongoClient.get_database
+        """
         return Database(name, connection=self._client, **kwargs)
 
     def close(self) -> None:
