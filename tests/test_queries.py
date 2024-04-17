@@ -94,3 +94,20 @@ async def test_find_one_and_set(
             )
             assert user_1_update.model_dump() == found
             await session.abort_transaction()
+
+@pytest.mark.asyncio(scope="session")
+async def test_replace_one(
+    client: Client,
+    collection: Collection,
+    user_1: BaseModel,
+    user_2: BaseModel
+) -> None:
+    async with await client.motor.start_session() as session:
+        async with session.start_transaction():
+            await collection.insert_one(user_1, session=session)
+            result = await collection.replace_one(
+                user_1, user_2, session=session
+            )
+            assert result.modified_count == 1
+            await session.abort_transaction()
+
