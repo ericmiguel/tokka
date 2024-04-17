@@ -433,6 +433,7 @@ class Collection:
     def update_one(
         self,
         model: BaseModel,
+        update: dict[str, Any] | BaseModel,
         *,
         filter_by: None | str | list[str] = None,
         upsert: bool = False,
@@ -445,6 +446,8 @@ class Collection:
         ----------
         model : BaseModel
             Pydantic model instance.
+        update: dict[str, Any] | BaseModel
+            The update to apply over the found document.
         filter_by : None | str | list[str], optional
             Model keys to use as query filter, by default None.
         upsert : bool, optional
@@ -455,10 +458,22 @@ class Collection:
         Awaitable[UpdateResult]
             Some MongoDB internal infos about the query result.
         """
-        _, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
-        _update = model.model_dump(*model_dump_kwargs)
+        update_one_kwargs, model_dump_kwargs = self._pop_model_dump_kwargs(kwargs)
+
+        match update:
+            case x if isinstance(x, dict):
+                update_value = x
+            case xx if isinstance(xx, BaseModel):
+                update_value = xx.model_dump(**model_dump_kwargs)
+            case _:
+                raise ValueError("Update must be a dict or a Pydantic model instance.")
+
+        _update = {"$set": update_value}
+
         _filter = self._make_filter(model, filter_by)
-        return self.collection.update_one(_filter, _update, upsert)
+        return self.collection.update_one(
+            _filter, _update, upsert=upsert, **update_one_kwargs
+        )
 
     def set(
         self,
