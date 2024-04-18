@@ -6,11 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- *(Client)* Supports AsyncIOMotorClient kwargs
-- *(Database)* Now accepts only AsyncIOMotorClient as connection parameter argument
-- *(Database)* Supports AsyncIOMotorDatabase kwargs
-- *(Database)* Allows kwargs on get_collection method
-- *(Client)* Motor client getter
+- *(Client)* Support AsyncIOMotorClient kwargs
+- *(Database)* Accept only AsyncIOMotorClient as connection parameter argument
+- *(Database)* Support to AsyncIOMotorDatabase kwargs
+- *(Database)* Support to get_collection kwargs
+- *(Client)* Add Motor client getter
 
 ### 🐛 Bug Fixes
 
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 - *(Collection)* Set
 - *(tokka/kwargs)* FindKwargs session type
 - *(Collection)* Find_one_and_set update behavior standardization
-- *(Collection.set)* None as default argument for match parameter
+- *(Collection.set)* Add None as default argument on match parameter
 
 ### 🚜 Refactor
 
@@ -27,31 +27,30 @@ All notable changes to this project will be documented in this file.
 
 ### 📚 Documentation
 
-- _make_projection docstring added
-- Find_one docstring added
-- Find_one_and_replace docstring added
-- Find_one_and_delete docstring added
-- Find_one_and_update docstring added
-- Find_one_and_set docstring added
-- Replace_one docstring added
-- Insert_one docstring added
-- Update_one docstring added
-- Set docstring added
-- Database class docstring added
-- Client class docstring added
-- Main package docstring
+- *(collection)* Add _make_filter docstring
+- *(Collection)* Add _make_projection docstring
+- *(Collection)* Add find_one docstring
+- *(Collection)* Add find_one_and_replace docstring
+- *(Collection)* Add find_one_and_delete docstring
+- *(Collection)* Add find_one_and_update docstring
+- *(Collection)* Add find_one_and_set docstring
+- *(Collection)* Add replace_one docstring
+- *(Collection)* Add insert_one docstring
+- *(Collection)* Add update_one docstring
+- *(Collection)* Add set docstring
+- *(Database)* Add class docstring
+- *(Client)* Add class docstring
+- Add main package docstring
 - Update package docstring
-- Update readme
-- Fix typo
+- Update package description
 - Kwargs module docstrings
-- Docstrings
-- *(Client)* Added link to MongoClient kwargs documentation
+- *(Client)* Add link to MongoClient kwargs documentation
 - *(readme)* Testing instructions
 
 ### 🎨 Styling
 
 - Ruff format and check
-- Removed unused imports
+- Remove unused imports
 
 ### 🧪 Testing
 
@@ -66,6 +65,10 @@ All notable changes to this project will be documented in this file.
 - *(Collection)* Test_replace_one
 - *(Collection)* Set
 
+### ⚙️ Miscellaneous Tasks
+
+- Changelog using git-cliff
+
 ### Dependencies
 
 - Added pytest and pytest-asyncio
@@ -78,17 +81,19 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Find_one
-- Find_one_and_replace
-- *(find_one)* Projection parameter
-- Find_one_and_update
-- Find_one_and_set
-- Find_one_and_delete
-- Replace_one
+- *(Collection)* Add find_one
+- *(Collection)* Add find_one_and_replace
+- *(Collection.find_one)* Add projection parameter
+- *(Collection)* Add find_one_and_update
+- *(Collection)* Add find_one_and_set
+- *(Collection)* Add find_one_and_delete
+- *(Collection)* Add replace_one
 
 ### 🚜 Refactor
 
 - Rename _create_query_filter to _make_filter
+- Rename tokka/types module to tokka/kwargs
+- *(Collection)* Rename 'filter' and 'update' variables to '_filter' / '_update'
 
 ### 📚 Documentation
 
@@ -96,26 +101,22 @@ All notable changes to this project will be documented in this file.
 - Dict intersection type hint notes
 - Dict intersection type hint notes
 - Update sample
-- Update sample
-- Update sample
 - Readme update
 - Logo
-- Fix logo
 - Installation command
 
 ### 🎨 Styling
 
-- Renamed 'filter' / 'update' variables to '_filter' / '_update'
 - Ruff format
 
 ### Bug
 
-- _pop_model_dump_kwargs now correctly splits Pydantic's model_dump kwargs
-- *(find_one_and_replace)* Pop pymongo redundant kwargs
+- _pop_model_dump_kwargs correctly splits Pydantic's model_dump kwargs
+- *(Collection.find_one_and_replace)* Pop pymongo redundant kwargs
 
-### Rearrange
+### Init
 
-- *(tokka/types)* Renamed to tokka/kwargs
+- First commit
 
 ### Refat
 
